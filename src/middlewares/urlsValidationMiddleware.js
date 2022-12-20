@@ -33,3 +33,31 @@ export async function postUrlValidation(req, res, next) {
     res.locals.url = url.rows[0];
     next();
  }
+
+ export async function deleteUrlValidation(req,res,next){
+    const {id}=req.params;
+    const isUrlExist = await connection.query(
+        `SELECT * FROM urls WHERE "id"= $1`, [id]
+    );
+    if(isUrlExist.rows.length===0){
+        return res.sendStatus(404);
+    }
+   
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await connection.query(
+        `SELECT * FROM sessions WHERE token= $1;`, [token]);
+    if (!token||session.rows.length===0) {
+      return res.sendStatus(401);
+    }
+   /*  procurar no sessions quem é o user */
+   const userId = session.rows[0].userId;
+    const isUrlUser = await connection.query(
+        `SELECT * FROM urls WHERE "id"= $1 AND "userId" = $2;`, [id,userId]
+    );
+    if(isUrlUser.rows.length===0){
+        return res.sendStatus(401);
+    }
+  
+    next();
+ }
