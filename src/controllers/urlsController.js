@@ -18,4 +18,36 @@ export async function postUrl(req, res) {
      res.sendStatus(500)
    } 
   }
-  
+  export async function getIdUrl(req, res) {
+    const {id }= req.params;
+   try {
+    const url = await connection.query(
+        `SELECT * FROM urls WHERE id= $1;`, [id]);;
+        if(url.rows.length===0){
+            return res.sendStatus(404);
+        };
+     const urlRow = url.rows[0]
+     res.status(200).send({"id":urlRow.id,"shortUrl":urlRow.shortUrl,"url":urlRow.url})
+   } catch (err) {
+     console.log(err);
+     res.sendStatus(500)
+   } 
+  }
+
+  export async function getOpenUrl(req,res){
+    const url= res.locals.url
+    try{
+        await connection.query(
+            `
+            UPDATE urls
+            SET "visitCount" = "visitCount" +1
+            WHERE id = $1
+          `,
+            [url.id]
+          );
+          res.redirect(200,url.url)
+    }catch(err){
+        console.log(err);
+        res.sendStatus(500);
+    }
+  }
