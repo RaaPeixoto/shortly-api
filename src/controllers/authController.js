@@ -1,14 +1,12 @@
-import connection from "../database/database.js";
+
 import {v4 as uuidV4} from "uuid";
 import bcrypt from "bcrypt";
+import { insertSession, insertUser } from "../Repositories/authRepository.js";
 export async function signUp(req,res) {
     const { name, email, password } = req.body;
     const passwordHash = bcrypt.hashSync(password, 10)
   try {
-    await connection.query(
-        `INSERT INTO users(name,email,password) VALUES ($1,$2,$3);`,
-        [name,email,passwordHash]
-      );
+    await insertUser(name,email,passwordHash);
     
       res.sendStatus(201);
   } catch (err) {
@@ -23,10 +21,7 @@ export async function signIn(req, res) {
  const token = uuidV4(); 
 
  try {
-   await connection.query(
-    `INSERT INTO sessions(token,"userId") VALUES ($1,$2);`,
-    [token,userId]
-  );
+  await insertSession(token,userId);
    
    res.status(200).send(token)
  } catch (err) {

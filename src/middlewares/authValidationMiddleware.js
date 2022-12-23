@@ -1,12 +1,11 @@
 import { newUserSchema } from "../models/newUserSchema.js";
-import connection from "../database/database.js";
 import signInSchema from "../models/signInSchema.js";
 import bcrypt from "bcrypt";
+import { checkEmail } from "../Repositories/authRepository.js";
 export async function signUpValidation(req, res, next) {
     const {name,email,password,confirmPassword} = req.body;
  
-    const isEmailRegistered =  await connection.query(
-        `SELECT * FROM users WHERE email= $1;`, [email]);
+    const isEmailRegistered = await checkEmail(email);
     if(isEmailRegistered.rows.length>0){
       return res.status(409).send("Email já cadastrado!")
     }
@@ -38,8 +37,7 @@ export async function signUpValidation(req, res, next) {
         return res.status(422).send(erros);  
       }
      
-      const user =  await connection.query(
-          `SELECT * FROM users WHERE email= $1 ;`, [email]);
+      const user =   await checkEmail(email);
         
           const passwordConfirm = bcrypt.compareSync(password, user.rows[0].password);
       if(user.rows.length===0 || !passwordConfirm){

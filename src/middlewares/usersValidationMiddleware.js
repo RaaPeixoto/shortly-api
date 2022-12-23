@@ -1,10 +1,10 @@
-import connection from "../database/database.js";
+
+import { getUserBySession } from "../Repositories/authRepository.js";
 
  export async function getUserValidation(req,res,next){
     const { authorization } = req.headers;
     const token = authorization?.replace("Bearer ", "");
-    const session = await connection.query(
-        `SELECT * FROM sessions WHERE token= $1;`, [token]);
+    const session = await getUserBySession(token);
        
     if (!token) {
       return res.sendStatus(401);
